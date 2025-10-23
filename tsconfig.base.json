@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@life/tokens": ["packages/tokens/src"],
+      "@life/ui/*": ["packages/ui/src/*"]
+    },
+    "skipLibCheck": true
+  }
+}

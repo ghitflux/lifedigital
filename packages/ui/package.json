@@ -1,0 +1,26 @@
+{
+  "name": "@life/ui",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@life/tokens": "workspace:*",
+    "@tamagui/config": "^1.114.5",
+    "@tamagui/core": "^1.114.5",
+    "@tamagui/lucide-icons": "^1.114.5",
+    "@tamagui/themes": "^1.114.5",
+    "tamagui": "^1.114.5",
+    "react-native-reanimated": "~3.16.1",
+    "react-native-svg": "^15.8.0",
+    "react-native-gesture-handler": "~2.18.1"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "scripts": {
+    "build": "echo 'no build needed'",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  }
+}

@@ -1,0 +1,14 @@
+node_modules
+dist
+.expo
+.expo-shared
+*.log
+.env
+.env.*
+.DS_Store
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.coverage
+.idea
+.vscode
