@@ -17,7 +17,7 @@ export {
   useLoginWithGoogle,
   useRefreshToken,
   useLogout,
-} from './useAuth'
+} from "./useAuth";
 
 // Profile hooks
 export {
@@ -26,18 +26,19 @@ export {
   useUpdateWhatsApp,
   useVerifyOTP,
   useUpdateProfile,
-} from './useProfile'
+} from "./useProfile";
 
 // Documents hooks
 export {
   useDocuments,
   useDocument,
   useGetPresignedUrl,
+  useFinalizeUpload,
   useUploadDocument,
   useDeleteDocument,
   DocumentStatus,
   DocumentType,
-} from './useDocuments'
+} from "./useDocuments";
 
 // Margin hooks
 export {
@@ -45,7 +46,7 @@ export {
   useMarginHistory,
   useMarginPercentage,
   useMarginStatus,
-} from './useMargin'
+} from "./useMargin";
 
 // Simulations hooks
 export {
@@ -58,4 +59,4 @@ export {
   useApprovedSimulations,
   SimulationStatus,
   ProductType,
-} from './useSimulations'
+} from "./useSimulations";

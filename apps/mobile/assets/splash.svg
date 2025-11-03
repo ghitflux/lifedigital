@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="2048" height="2732" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect width="2048" height="2732" fill="#0B0F1A"/>
+  <circle cx="1024" cy="1200" r="500" fill="#2563EB"/>
+  <circle cx="1024" cy="1200" r="380" fill="#60A5FA" opacity="0.3"/>
+  <text x="1024" y="1300" font-family="Arial, sans-serif" font-size="240" font-weight="bold" fill="#FFFFFF" text-anchor="middle">LD</text>
+  <text x="1024" y="1850" font-family="Arial, sans-serif" font-size="100" fill="#FFFFFF" text-anchor="middle" opacity="0.9">Life Digital</text>
+  <text x="1024" y="1980" font-family="Arial, sans-serif" font-size="60" fill="#FFFFFF" text-anchor="middle" opacity="0.6">Credito Consignado</text>
+
+</svg>

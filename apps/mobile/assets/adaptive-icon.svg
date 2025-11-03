@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+  
+  <rect width="1024" height="1024" fill="transparent"/>
+  <circle cx="512" cy="512" r="450" fill="#2563EB"/>
+  <circle cx="512" cy="512" r="340" fill="#60A5FA" opacity="0.3"/>
+  <text x="512" y="600" font-family="Arial, sans-serif" font-size="240" font-weight="bold" fill="#FFFFFF" text-anchor="middle">LD</text>
+
+</svg>

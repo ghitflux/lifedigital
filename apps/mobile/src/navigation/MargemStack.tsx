@@ -1,26 +1,13 @@
-/**
- * Margem Stack Navigator
- */
+import React from "react";
+import {
+  createStackNavigator,
+  CardStyleInterpolators,
+} from "@react-navigation/stack";
+import type { MargemStackParamList } from "../types/navigation";
+import { tokens } from "@life/tokens";
+import DetalhesMargemScreen from "../screens/DetalhesMargem";
 
-import React from 'react'
-import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack'
-import type { MargemStackParamList } from '../types/navigation'
-import { tokens } from '@life/tokens'
-
-// Placeholder screen
-import { YStack, Text } from '@life/ui'
-
-const Stack = createStackNavigator<MargemStackParamList>()
-
-function DetalhesMargemScreen() {
-  return (
-    <YStack flex={1} backgroundColor="$bg" padding="$lg">
-      <Text fontSize={24} fontWeight="600" color="$text">
-        Detalhes da Margem
-      </Text>
-    </YStack>
-  )
-}
+const Stack = createStackNavigator<MargemStackParamList>();
 
 export function MargemStack() {
   return (
@@ -33,7 +20,7 @@ export function MargemStack() {
         },
         headerTintColor: tokens.colors.text,
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: "600",
         },
         gestureEnabled: true,
         cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
@@ -42,8 +29,8 @@ export function MargemStack() {
       <Stack.Screen
         name="DetalhesMargem"
         component={DetalhesMargemScreen}
-        options={{ title: 'Margem Disponível' }}
+        options={{ title: "Margem Disponivel" }}
       />
     </Stack.Navigator>
-  )
+  );
 }

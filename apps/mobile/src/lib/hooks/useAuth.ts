@@ -1,206 +1,101 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
-import { queryKeys } from '../queryClient'
-import { useAuthStore } from '../../stores/authStore'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../queryClient";
+import { useAuthStore } from "../../stores/authStore";
+import {
+  getMe,
+  loginWithGoogle as loginWithGoogleRequest,
+  logout as logoutRequest,
+  refreshToken as refreshTokenRequest,
+} from "../../services/api";
+import type {
+  LoginResponse,
+  LoginWithGoogleRequest,
+  RefreshTokenResponse,
+  User,
+} from "../../services/api";
 
-/**
- * Base URL da API
- */
-const API_URL = 'http://localhost:8080'
-
-/**
- * Types
- */
-interface User {
-  id: string
-  email: string
-  name: string
-  picture?: string
-  cpf?: string
-  whatsapp?: string
-  whatsappVerified: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-interface LoginWithGoogleRequest {
-  idToken: string
-}
-
-interface LoginResponse {
-  accessToken: string
-  refreshToken: string
-  user: User
-}
-
-/**
- * Hook: useUser
- *
- * @description
- * Query para buscar dados do usuário autenticado.
- * Só faz a requisição se houver um token de acesso.
- *
- * @example
- * ```tsx
- * const { data: user, isLoading, error } = useUser()
- * if (user) {
- *   console.log('Usuário:', user.name)
- * }
- * ```
- */
 export function useUser() {
-  const { accessToken } = useAuthStore()
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   return useQuery({
     queryKey: queryKeys.user,
-    queryFn: async (): Promise<User> => {
-      const response = await axios.get(`${API_URL}/me`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      return response.data
-    },
-    enabled: !!accessToken, // Só executa se houver token
-  })
+    queryFn: (): Promise<User> => getMe(),
+    enabled: Boolean(accessToken),
+  });
 }
 
-/**
- * Hook: useLoginWithGoogle
- *
- * @description
- * Mutation para fazer login com Google OAuth.
- * Recebe o ID token do Google e autentica no backend.
- * Ao sucesso, salva tokens e dados do usuário no authStore.
- *
- * @example
- * ```tsx
- * const loginWithGoogle = useLoginWithGoogle()
- *
- * async function handleGoogleLogin() {
- *   const idToken = await getGoogleIdToken() // via expo-auth-session
- *   await loginWithGoogle.mutateAsync({ idToken })
- * }
- * ```
- */
 export function useLoginWithGoogle() {
-  const queryClient = useQueryClient()
-  const { setAccessToken, setRefreshToken, setIsAuthenticated } = useAuthStore()
+  const queryClient = useQueryClient();
+  const login = useAuthStore((state) => state.login);
+  const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
 
   return useMutation({
-    mutationFn: async (request: LoginWithGoogleRequest): Promise<LoginResponse> => {
-      const response = await axios.post(`${API_URL}/auth/google`, {
-        id_token: request.idToken,
-      })
-      return response.data
-    },
+    mutationFn: (request: LoginWithGoogleRequest): Promise<LoginResponse> =>
+      loginWithGoogleRequest(request),
     onSuccess: (data) => {
-      // Salva tokens no store (que persiste no MMKV)
-      setAccessToken(data.accessToken)
-      setRefreshToken(data.refreshToken)
-      setIsAuthenticated(true)
+      login(
+        {
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        },
+        data.user,
+      );
 
-      // Adiciona usuário no cache do TanStack Query
-      queryClient.setQueryData(queryKeys.user, data.user)
+      queryClient.setQueryData(queryKeys.user, data.user);
     },
     onError: (error) => {
-      console.error('Erro ao fazer login com Google:', error)
-      setIsAuthenticated(false)
+      console.error("Failed to login with Google:", error);
+      setIsAuthenticated(false);
     },
-  })
+  });
 }
 
-/**
- * Hook: useRefreshToken
- *
- * @description
- * Mutation para renovar o access token usando o refresh token.
- * Usado quando o access token expira (401 Unauthorized).
- *
- * @example
- * ```tsx
- * const refreshToken = useRefreshToken()
- *
- * async function handleTokenExpired() {
- *   await refreshToken.mutateAsync()
- * }
- * ```
- */
 export function useRefreshToken() {
-  const { refreshToken, setAccessToken, setIsAuthenticated } = useAuthStore()
+  const storedRefreshToken = useAuthStore((state) => state.refreshToken);
+  const updateSession = useAuthStore((state) => state.updateSession);
+  const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
 
   return useMutation({
-    mutationFn: async (): Promise<{ accessToken: string }> => {
-      const response = await axios.post(`${API_URL}/auth/refresh`, {
-        refresh_token: refreshToken,
-      })
-      return response.data
+    mutationFn: async (): Promise<RefreshTokenResponse> => {
+      if (!storedRefreshToken) {
+        throw new Error("Missing refresh token");
+      }
+
+      return refreshTokenRequest({ refreshToken: storedRefreshToken });
     },
     onSuccess: (data) => {
-      setAccessToken(data.accessToken)
-      setIsAuthenticated(true)
+      updateSession({ accessToken: data.accessToken });
+      setIsAuthenticated(true);
     },
     onError: (error) => {
-      console.error('Erro ao renovar token:', error)
-      // Se falhar ao renovar, desloga o usuário
-      setIsAuthenticated(false)
-      setAccessToken(null)
+      console.error("Failed to refresh token:", error);
+      logout();
+      setIsAuthenticated(false);
     },
-  })
+  });
 }
 
-/**
- * Hook: useLogout
- *
- * @description
- * Mutation para fazer logout do usuário.
- * Limpa tokens, cache e reseta estado de autenticação.
- *
- * @example
- * ```tsx
- * const logout = useLogout()
- *
- * async function handleLogout() {
- *   await logout.mutateAsync()
- * }
- * ```
- */
 export function useLogout() {
-  const queryClient = useQueryClient()
-  const { accessToken, logout: logoutStore } = useAuthStore()
+  const queryClient = useQueryClient();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const logoutStore = useAuthStore((state) => state.logout);
 
   return useMutation({
     mutationFn: async (): Promise<void> => {
-      // Chama endpoint de logout no backend (opcional)
-      if (accessToken) {
-        try {
-          await axios.post(
-            `${API_URL}/auth/logout`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }
-          )
-        } catch (error) {
-          // Ignora erros (pode ser que o token já esteja inválido)
-          console.warn('Erro ao fazer logout no backend:', error)
-        }
+      if (!accessToken) {
+        return;
+      }
+
+      try {
+        await logoutRequest();
+      } catch (error) {
+        console.warn("Failed to call logout endpoint:", error);
       }
     },
-    onSuccess: () => {
-      // Limpa store local
-      logoutStore()
-
-      // Limpa todo o cache do TanStack Query
-      queryClient.clear()
+    onSettled: () => {
+      logoutStore();
+      queryClient.clear();
     },
-    onError: (error) => {
-      console.error('Erro ao fazer logout:', error)
-      // Mesmo com erro, limpa localmente
-      logoutStore()
-      queryClient.clear()
-    },
-  })
+  });
 }

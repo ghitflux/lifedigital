@@ -1,36 +1,21 @@
-/**
- * Documents Store - Zustand
- *
- * Manages documents upload and list
- */
+import { create } from "zustand";
+import type { Document } from "../services/api";
 
-import { create } from 'zustand'
-
-export interface Document {
-  id: string
-  type: 'contracheque' | 'rg' | 'cpf' | 'comprovante' | 'outros'
-  name: string
-  status: 'pending' | 'scanning' | 'approved' | 'rejected'
-  url?: string
-  uploadedAt: string
-  rejectionReason?: string
-}
+type StoredDocument = Document;
 
 interface DocumentsState {
-  documents: Document[]
-  isLoading: boolean
-  error: string | null
-  uploadProgress: number
-
-  // Actions
-  setDocuments: (documents: Document[]) => void
-  addDocument: (document: Document) => void
-  updateDocument: (id: string, updates: Partial<Document>) => void
-  removeDocument: (id: string) => void
-  setLoading: (loading: boolean) => void
-  setError: (error: string) => void
-  clearError: () => void
-  setUploadProgress: (progress: number) => void
+  documents: StoredDocument[];
+  isLoading: boolean;
+  error: string | null;
+  uploadProgress: number;
+  setDocuments: (documents: StoredDocument[]) => void;
+  addDocument: (document: StoredDocument) => void;
+  updateDocument: (id: string, updates: Partial<StoredDocument>) => void;
+  removeDocument: (id: string) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string) => void;
+  clearError: () => void;
+  setUploadProgress: (progress: number) => void;
 }
 
 export const useDocumentsStore = create<DocumentsState>((set) => ({
@@ -49,7 +34,9 @@ export const useDocumentsStore = create<DocumentsState>((set) => ({
 
   updateDocument: (id, updates) =>
     set((state) => ({
-      documents: state.documents.map((doc) => (doc.id === id ? { ...doc, ...updates } : doc)),
+      documents: state.documents.map((doc) =>
+        doc.id === id ? { ...doc, ...updates } : doc,
+      ),
       error: null,
     })),
 
@@ -66,4 +53,4 @@ export const useDocumentsStore = create<DocumentsState>((set) => ({
   clearError: () => set({ error: null }),
 
   setUploadProgress: (progress) => set({ uploadProgress: progress }),
-}))
+}));

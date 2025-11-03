@@ -1,36 +1,17 @@
-/**
- * Margin Store - Zustand
- *
- * Manages margin data and history
- */
-
-import { create } from 'zustand'
-
-export interface MarginData {
-  totalDisponivel: number
-  bruto: number
-  utilizado: number
-  atualizadoEm: string
-}
-
-export interface MarginHistoryItem {
-  mes: string
-  valor: number
-}
+import { create } from "zustand";
+import type { Margin, MarginHistory } from "../services/api";
 
 interface MarginState {
-  current: MarginData | null
-  history: MarginHistoryItem[]
-  isLoading: boolean
-  error: string | null
-
-  // Actions
-  setMargin: (margin: MarginData) => void
-  setHistory: (history: MarginHistoryItem[]) => void
-  updateMargin: (updates: Partial<MarginData>) => void
-  setLoading: (loading: boolean) => void
-  setError: (error: string) => void
-  clearError: () => void
+  current: Margin | null;
+  history: MarginHistory[];
+  isLoading: boolean;
+  error: string | null;
+  setMargin: (margin: Margin) => void;
+  setHistory: (history: MarginHistory[]) => void;
+  updateMargin: (updates: Partial<Margin>) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string) => void;
+  clearError: () => void;
 }
 
 export const useMarginStore = create<MarginState>((set) => ({
@@ -54,4 +35,4 @@ export const useMarginStore = create<MarginState>((set) => ({
   setError: (error) => set({ error }),
 
   clearError: () => set({ error: null }),
-}))
+}));

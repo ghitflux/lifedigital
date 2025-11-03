@@ -1,204 +1,107 @@
-import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
-import { queryKeys } from '../queryClient'
-import { useAuthStore } from '../../stores/authStore'
-import { useMarginStore } from '../../stores/marginStore'
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "../queryClient";
+import { useAuthStore } from "../../stores/authStore";
+import { useMarginStore } from "../../stores/marginStore";
+import { getMargin, getMarginHistory } from "../../services/api";
+import type { Margin, MarginHistory } from "../../services/api";
 
-/**
- * Base URL da API
- */
-const API_URL = 'http://localhost:8080'
-
-/**
- * Types
- */
-interface Margin {
-  total: number
-  used: number
-  available: number
-  lastUpdated: string
-}
-
-interface MarginHistory {
-  month: string
-  year: number
-  total: number
-  used: number
-  available: number
-}
-
-/**
- * Hook: useMargin
- *
- * @description
- * Query para buscar a margem consignável atual do usuário.
- * Retorna o total, utilizado e disponível.
- * Sincroniza automaticamente com o marginStore.
- *
- * @example
- * ```tsx
- * const { data: margin, isLoading, error, refetch } = useMargin()
- * if (margin) {
- *   console.log('Margem disponível:', margin.available)
- *   console.log('Margem total:', margin.total)
- *   console.log('Margem utilizada:', margin.used)
- * }
- * ```
- */
 export function useMargin() {
-  const { accessToken } = useAuthStore()
-  const { setMargin } = useMarginStore()
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const setMargin = useMarginStore((state) => state.setMargin);
 
   return useQuery({
     queryKey: queryKeys.margin,
-    queryFn: async (): Promise<Margin> => {
-      const response = await axios.get(`${API_URL}/margem`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      return response.data
-    },
-    enabled: !!accessToken,
-    onSuccess: (data) => {
-      // Sincroniza com o marginStore
-      setMargin(data)
-    },
-    // Refetch a cada 5 minutos para manter dados atualizados
+    queryFn: (): Promise<Margin> => getMargin(),
+    enabled: Boolean(accessToken),
+    onSuccess: (data) => setMargin(data),
     refetchInterval: 1000 * 60 * 5,
-  })
+  });
 }
 
-/**
- * Hook: useMarginHistory
- *
- * @description
- * Query para buscar o histórico de margem consignável.
- * Retorna os valores dos últimos 12 meses.
- * Útil para exibir gráficos e tendências.
- *
- * @example
- * ```tsx
- * const { data: history, isLoading } = useMarginHistory()
- * history?.forEach(item => {
- *   console.log(`${item.month}/${item.year}: R$ ${item.available}`)
- * })
- * ```
- */
 export function useMarginHistory() {
-  const { accessToken } = useAuthStore()
-  const { setHistory } = useMarginStore()
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const setHistory = useMarginStore((state) => state.setHistory);
 
   return useQuery({
     queryKey: queryKeys.marginHistory,
-    queryFn: async (): Promise<MarginHistory[]> => {
-      const response = await axios.get(`${API_URL}/margem/historico`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
-      return response.data
-    },
-    enabled: !!accessToken,
-    onSuccess: (data) => {
-      // Sincroniza com o marginStore
-      setHistory(data)
-    },
-    // Histórico não muda com frequência, então pode ter staleTime maior
-    staleTime: 1000 * 60 * 30, // 30 minutos
-  })
+    queryFn: (): Promise<MarginHistory[]> => getMarginHistory(),
+    enabled: Boolean(accessToken),
+    onSuccess: (data) => setHistory(data),
+    staleTime: 1000 * 60 * 30,
+  });
 }
 
-/**
- * Hook: useMarginPercentage
- *
- * @description
- * Hook customizado que calcula a porcentagem de utilização da margem.
- * Retorna um valor entre 0 e 100.
- *
- * @example
- * ```tsx
- * const { data: percentage } = useMarginPercentage()
- * if (percentage !== undefined) {
- *   console.log(`Margem utilizada: ${percentage}%`)
- * }
- * ```
- */
 export function useMarginPercentage() {
-  const { data: margin, ...rest } = useMargin()
+  const { data: margin, ...rest } = useMargin();
 
-  const percentage = margin ? (margin.used / margin.total) * 100 : 0
+  const percentage = margin ? (margin.used / margin.total) * 100 : 0;
 
   return {
     data: percentage,
     margin,
     ...rest,
-  }
+  };
 }
 
-/**
- * Hook: useMarginStatus
- *
- * @description
- * Hook customizado que retorna o status da margem.
- * Útil para exibir alertas e avisos ao usuário.
- *
- * Status:
- * - 'healthy': 0-50% utilizado (verde)
- * - 'warning': 50-80% utilizado (amarelo)
- * - 'critical': 80-100% utilizado (vermelho)
- * - 'unavailable': sem margem disponível (cinza)
- *
- * @example
- * ```tsx
- * const { status, color, message } = useMarginStatus()
- * console.log(`Status: ${status} - ${message}`)
- * ```
- */
-export function useMarginStatus() {
-  const { data: margin, isLoading, error } = useMargin()
+type MarginStatus =
+  | { status: "loading"; color: string; message: string }
+  | {
+      status: "unavailable";
+      color: string;
+      message: string;
+      percentage: number;
+    }
+  | {
+      status: "healthy" | "warning" | "critical";
+      color: string;
+      message: string;
+      percentage: number;
+    };
+
+export function useMarginStatus(): MarginStatus {
+  const { data: margin, isLoading, error } = useMargin();
 
   if (isLoading || error || !margin) {
     return {
-      status: 'loading',
-      color: 'gray',
-      message: 'Carregando margem...',
-    }
+      status: "loading",
+      color: "gray",
+      message: "Carregando margem...",
+    };
   }
 
-  const percentage = (margin.used / margin.total) * 100
+  const percentage = (margin.used / margin.total) * 100;
 
   if (margin.available === 0) {
     return {
-      status: 'unavailable',
-      color: 'gray',
-      message: 'Nenhuma margem disponível',
+      status: "unavailable",
+      color: "gray",
+      message: "Nenhuma margem disponivel",
       percentage,
-    }
+    };
   }
 
   if (percentage < 50) {
     return {
-      status: 'healthy',
-      color: 'green',
-      message: 'Margem saudável',
+      status: "healthy",
+      color: "green",
+      message: "Margem saudavel",
       percentage,
-    }
+    };
   }
 
   if (percentage < 80) {
     return {
-      status: 'warning',
-      color: 'yellow',
-      message: 'Atenção: margem limitada',
+      status: "warning",
+      color: "yellow",
+      message: "Atencao: margem limitada",
       percentage,
-    }
+    };
   }
 
   return {
-    status: 'critical',
-    color: 'red',
-    message: 'Alerta: margem quase esgotada',
+    status: "critical",
+    color: "red",
+    message: "Alerta: margem quase esgotada",
     percentage,
-  }
+  };
 }

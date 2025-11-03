@@ -5,7 +5,10 @@
   "types": "src/index.ts",
   "dependencies": {
     "@tamagui/config": "^1.114.5",
-    "@tamagui/core": "^1.114.5"
+    "@tamagui/core": "^1.114.5",
+    "@tamagui/themes": "^1.114.5",
+    "@tamagui/shorthands": "^1.114.5",
+    "@tamagui/react-native-media-driver": "^1.114.5"
   },
   "scripts": {
     "build": "echo 'no build needed'",

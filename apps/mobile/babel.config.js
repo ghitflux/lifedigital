@@ -1,18 +1,18 @@
-module.exports = function(api) {
+module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ['babel-preset-expo'],
+    presets: ["babel-preset-expo"],
     plugins: [
-      'react-native-reanimated/plugin',
       [
-        '@tamagui/babel-plugin',
+        "@tamagui/babel-plugin",
         {
-          components: ['tamagui'],
-          config: './packages/tokens/src/tamagui.config.ts',
+          components: ["tamagui"],
+          config: "./tamagui.config.ts",
           logTimings: true,
-          disableExtraction: process.env.NODE_ENV === 'development',
+          disableExtraction: process.env.NODE_ENV === "development",
         },
       ],
+      "react-native-reanimated/plugin", // deve ser o último
     ],
   };
 };

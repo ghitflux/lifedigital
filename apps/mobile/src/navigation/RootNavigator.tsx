@@ -1,25 +1,22 @@
-/**
- * Root Navigator
- *
- * Main navigator that handles authentication state
- */
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { YStack, Text } from "tamagui";
+import type { RootStackParamList } from "../types/navigation";
+import { useAuthStore } from "../stores/authStore";
+import { AuthStack } from "./AuthStack";
+import { AppTabs } from "./AppTabs";
 
-import React, { useEffect, useState } from 'react'
-import { NavigationContainer } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
-import { YStack, Text } from 'tamagui'
-import type { RootStackParamList } from '../types/navigation'
+const Stack = createStackNavigator<RootStackParamList>();
 
-// Navigators
-import { AuthStack } from './AuthStack'
-import { AppTabs } from './AppTabs'
-
-const Stack = createStackNavigator<RootStackParamList>()
-
-// Splash Screen Component
 function SplashScreen() {
   return (
-    <YStack flex={1} alignItems="center" justifyContent="center" backgroundColor="$bg">
+    <YStack
+      flex={1}
+      alignItems="center"
+      justifyContent="center"
+      backgroundColor="$bg"
+    >
       <Text fontSize={32} fontWeight="700" color="$primary">
         Life Digital
       </Text>
@@ -27,68 +24,57 @@ function SplashScreen() {
         Carregando...
       </Text>
     </YStack>
-  )
+  );
 }
 
-export function RootNavigator() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  useEffect(() => {
-    // Check auth status
-    // TODO: Check if user is logged in (check token in storage)
-    setTimeout(() => {
-      setIsLoading(false)
-      // setIsAuthenticated(true) // Set based on actual auth state
-    }, 2000)
-  }, [])
-
-  // Deep Linking Configuration
-  const linking = {
-    prefixes: ['lifedigital://', 'https://lifedigital.app'],
-    config: {
-      screens: {
-        Auth: {
-          screens: {
-            Welcome: 'welcome',
-            Login: 'login',
-          },
+const linking = {
+  prefixes: ["lifedigital://", "https://lifedigital.app"],
+  config: {
+    screens: {
+      Auth: {
+        screens: {
+          Welcome: "welcome",
         },
-        App: {
-          screens: {
-            DashboardTab: {
-              screens: {
-                Dashboard: 'dashboard',
-                NovaSimulacao: 'simulacao/nova',
-                DetalhesSimulacao: 'simulacao/:id',
-                Historico: 'historico',
-              },
+      },
+      App: {
+        screens: {
+          DashboardTab: {
+            screens: {
+              Dashboard: "dashboard",
+              NovaSimulacao: "simulacao/nova",
+              DetalhesSimulacao: "simulacao/:id",
+              Historico: "historico",
             },
-            MargemTab: {
-              screens: {
-                DetalhesMargem: 'margem',
-              },
+          },
+          MargemTab: {
+            screens: {
+              DetalhesMargem: "margem",
             },
-            DocumentosTab: {
-              screens: {
-                MeusDocumentos: 'documentos',
-                EnviarDocumento: 'documentos/enviar',
-              },
+          },
+          DocumentosTab: {
+            screens: {
+              MeusDocumentos: "documentos",
+              EnviarDocumento: "documentos/enviar",
             },
-            PerfilTab: {
-              screens: {
-                Perfil: 'perfil',
-                DadosPessoais: 'perfil/dados',
-                SegurancaPrivacidade: 'perfil/seguranca',
-                Notificacoes: 'perfil/notificacoes',
-                AjudaSuporte: 'perfil/ajuda',
-              },
+          },
+          PerfilTab: {
+            screens: {
+              Perfil: "perfil",
+              DadosPessoais: "perfil/dados",
+              SegurancaPrivacidade: "perfil/seguranca",
+              Notificacoes: "perfil/notificacoes",
+              AjudaSuporte: "perfil/ajuda",
             },
           },
         },
       },
     },
-  }
+  },
+};
+
+export function RootNavigator() {
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   return (
     <NavigationContainer linking={linking}>
@@ -96,10 +82,10 @@ export function RootNavigator() {
         screenOptions={{
           headerShown: false,
           animationEnabled: true,
-          cardStyle: { backgroundColor: 'transparent' },
+          cardStyle: { backgroundColor: "transparent" },
         }}
       >
-        {isLoading ? (
+        {!hasHydrated ? (
           <Stack.Screen name="Splash" component={SplashScreen} />
         ) : isAuthenticated ? (
           <Stack.Screen name="App" component={AppTabs} />
@@ -108,5 +94,5 @@ export function RootNavigator() {
         )}
       </Stack.Navigator>
     </NavigationContainer>
-  )
+  );
 }

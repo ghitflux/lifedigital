@@ -1,48 +1,20 @@
-/**
- * Simulations Store - Zustand
- *
- * Manages simulations data
- */
-
-import { create } from 'zustand'
-
-export interface SimulationResult {
-  cet: number
-  parcela: number
-  total: number
-  prazo: number
-}
-
-export interface Simulation {
-  id: string
-  produto: string
-  status: 'pending' | 'em_analise' | 'aprovada' | 'rejeitada' | 'aceita' | 'recusada'
-  parametros: {
-    valor?: number
-    prazo?: number
-    [key: string]: any
-  }
-  resultado?: SimulationResult
-  criadoEm: string
-  atualizadoEm: string
-}
+import { create } from "zustand";
+import type { Simulation } from "../services/api";
 
 interface SimulationsState {
-  simulations: Simulation[]
-  current: Simulation | null
-  isLoading: boolean
-  error: string | null
-
-  // Actions
-  setSimulations: (simulations: Simulation[]) => void
-  setCurrent: (simulation: Simulation) => void
-  addSimulation: (simulation: Simulation) => void
-  updateSimulation: (id: string, updates: Partial<Simulation>) => void
-  removeSimulation: (id: string) => void
-  clearCurrent: () => void
-  setLoading: (loading: boolean) => void
-  setError: (error: string) => void
-  clearError: () => void
+  simulations: Simulation[];
+  current: Simulation | null;
+  isLoading: boolean;
+  error: string | null;
+  setSimulations: (simulations: Simulation[]) => void;
+  setCurrent: (simulation: Simulation) => void;
+  addSimulation: (simulation: Simulation) => void;
+  updateSimulation: (id: string, updates: Partial<Simulation>) => void;
+  removeSimulation: (id: string) => void;
+  clearCurrent: () => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string) => void;
+  clearError: () => void;
 }
 
 export const useSimulationsStore = create<SimulationsState>((set) => ({
@@ -63,8 +35,13 @@ export const useSimulationsStore = create<SimulationsState>((set) => ({
 
   updateSimulation: (id, updates) =>
     set((state) => ({
-      simulations: state.simulations.map((sim) => (sim.id === id ? { ...sim, ...updates } : sim)),
-      current: state.current?.id === id ? { ...state.current, ...updates } : state.current,
+      simulations: state.simulations.map((sim) =>
+        sim.id === id ? { ...sim, ...updates } : sim,
+      ),
+      current:
+        state.current?.id === id
+          ? { ...state.current, ...updates }
+          : state.current,
       error: null,
     })),
 
@@ -82,4 +59,4 @@ export const useSimulationsStore = create<SimulationsState>((set) => ({
   setError: (error) => set({ error }),
 
   clearError: () => set({ error: null }),
-}))
+}));
